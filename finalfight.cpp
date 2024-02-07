@@ -8,6 +8,7 @@ struct postion
 };
 
 void runGame();
+void clearScreen();
 void generatMap(int size);
 
 int main(){
@@ -16,6 +17,7 @@ int main(){
 }
 
 void runGame(){
+    clearScreen();
     int size;
     cout << "Enter the size of the map: ";
     cin >> size;
@@ -23,6 +25,7 @@ void runGame(){
 }
 
 void generatMap(int size){
+    clearScreen();
     for(int i = 0; i <= size; i++)
     {
         for(int j = 0; j < size; j++)
@@ -47,4 +50,15 @@ void generatMap(int size){
 
         cout << endl;
     }
+}
+
+// this function is used when we want to clear the termial screen
+void clearScreen(){
+    #ifdef _WIN32
+        // for windows
+        system("CLS");
+    #else
+        // for other oprating systems
+        system("clear");
+    #endif
 }
