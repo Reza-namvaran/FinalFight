@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <conio.h>
+#include <windows.h>
 #include <fstream>
 
 
@@ -18,6 +19,7 @@ struct postion
 
 void runGame();
 void clearScreen();
+void hideCursor();
 void mainMenu();
 void generateMap(int size, int state, std::vector<std::vector<std::string>> & map);
 
@@ -28,6 +30,7 @@ int main(){
 
 void runGame(){
     clearScreen();
+    hideCursor();
     mainMenu();
     int size;
     std::cout << "Please Enter the size of the map: ";
@@ -138,6 +141,7 @@ void mainMenu(){
             }
         }
     } while (ch != 27);
+    std::exit(0);
     
 }
 
@@ -179,6 +183,15 @@ void generateMap(int size, int state, std::vector<std::vector<std::string>> & ma
 
         std::cout << std::endl;
     }
+}
+
+void hideCursor()
+{
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO info;
+    info.dwSize = 100;
+    info.bVisible = FALSE;
+    SetConsoleCursorInfo(consoleHandle, &info);
 }
 
 // this function is used when we want to clear the termial screen
