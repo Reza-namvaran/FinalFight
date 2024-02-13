@@ -22,6 +22,7 @@ void clearScreen();
 void hideCursor();
 void mainMenu();
 void generateMap(int size, int state, std::vector<std::vector<std::string>> & map);
+void move(std::vector<std::vector<std::string>> &map, int size, char direction);
 
 int main(){
     runGame();
@@ -44,6 +45,18 @@ void runGame(){
     }   
     std::vector<std::vector<std::string>> map(size, std::vector<std::string>(size));
     generateMap(size, 0, map);
+
+    while (true) {
+        if (_kbhit()) {
+            char ch = _getch();
+            if (ch == 'a' || ch == 'd') {
+                move(map, size, ch);
+                generateMap(size, 1, map);
+            } else if (ch == 'p') {
+                break;
+            }
+        }
+    }
 }
 
 void mainMenu(){
@@ -183,6 +196,23 @@ void generateMap(int size, int state, std::vector<std::vector<std::string>> & ma
 
         std::cout << std::endl;
     }
+}
+
+void move(std::vector<std::vector<std::string>> &map, int size, char direction) {
+        for (int j = 0; j < size; ++j) {
+            if (map[size - 1][j] == "#") {
+                map[size - 1][j] = " ";
+                if (direction == 'a' && j > 0) {
+                    map[size - 1][j - 1] = "#";
+                } else if (direction == 'd' && j < size - 1) {
+                    map[size - 1][j + 1] = "#";
+                }
+                else if(j == 0 || j == size - 1) 
+                    map[size - 1][j] = "#";
+                return;
+            }
+        }
+    
 }
 
 void hideCursor()
