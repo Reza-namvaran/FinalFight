@@ -30,12 +30,16 @@ void runGame();
 void clearScreen();
 void hideCursor();
 void mainMenu();
-void runningMenu(int health, int score, int size);
+void runningMenu(int, int, int);
 string selectMode();
 void generateGame(string);
 void generateMap(int, vector<vector<string>> &map, vector<Spaceship>, vector<Bullet>, int);
-void move(vector<Spaceship> &spaceships, int, char, vector<Bullet> &bullets);
+void move(vector<Spaceship> &spaceships, int &score, int, int, char, vector<Bullet> &bullets);
+void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int, int);
 void createEnemy(vector<Spaceship> &spaceships, int);
+void increaseScore(int &score, string);
+void damage(Spaceship &spaceship);
+void gameOver(bool);
 
 int main()
 {
@@ -284,16 +288,17 @@ void generateGame(string gameType)
 {
     if (gameType == "basic")
     {
-        int size;
+        int size, goalScore;
         do
         {
-            cout << "Please Enter the size of the map: ";
+            cout << "Please Enter the size of the map (minimum 15) : ";
             cin >> size;
             if (size < 15)
             {
                 cout << "Notice: The minimum size of map is 15, try greater size!" << endl;
             }
         } while (size < 15);
+
         if (size % 2 == 0)
         {
             cout << "Notice: You've entered an Even number for the size while it should be an odd number!" << endl;
@@ -301,6 +306,17 @@ void generateGame(string gameType)
             _getch();
             size++;
         }
+
+        do
+        {
+            cout << "Please Enter your goal score (minimum 20) : ";
+            cin >> goalScore;
+            if (size < 15)
+            {
+                cout << "Notice: The minimum score is 20, try greater score!" << endl;
+            }
+        } while (goalScore < 20);
+
         int score = 0;
         vector<vector<string>> map(size, vector<string>(size));
         vector<Spaceship> spaceships;
@@ -321,7 +337,7 @@ void generateGame(string gameType)
                 char ch = _getch();
                 if (ch == 'a' || ch == 'd')
                 {
-                    move(spaceships, size, ch, bullets);
+                    move(spaceships, score, size, goalScore, ch, bullets);
                     generateMap(size, map, spaceships, bullets, score);
                 }
                 else if (ch == 'e')
@@ -411,8 +427,9 @@ void generateMap(int size, vector<vector<string>> &map, vector<Spaceship> spaces
     }
 }
 
-void move(vector<Spaceship> &spaceships, int size, char direction, vector<Bullet> &bullets)
+void move(vector<Spaceship> &spaceships, int &score, int size, int goalScore, char direction, vector<Bullet> &bullets)
 {
+    checkPositions(spaceships, bullets, score, goalScore, size);
     switch (direction)
     {
     case 'a':
@@ -428,16 +445,54 @@ void move(vector<Spaceship> &spaceships, int size, char direction, vector<Bullet
         }
         break;
     }
+    checkPositions(spaceships, bullets, score, goalScore, size);
+
     spaceships[spaceships.size() - 1].startYPos++;
     spaceships[spaceships.size() - 1].endYPos++;
+    checkPositions(spaceships, bullets, score, goalScore, size);
+
     for (int i = 0; i < bullets.size(); i++)
     {
         bullets[i].yPos--;
     }
+    checkPositions(spaceships, bullets, score, goalScore, size);
+
     Bullet newBullet;
     newBullet.xPos = spaceships[0].startXPos;
     newBullet.yPos = spaceships[0].startYPos - 1;
     bullets.push_back(newBullet);
+    checkPositions(spaceships, bullets, score, goalScore, size);
+}
+
+void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int goalScore, int size)
+{
+    for (int i = 0; i < bullets.size(); i++)
+    {
+        if (bullets[i].xPos >= spaceships[spaceships.size() - 1].startXPos && bullets[i].xPos <= spaceships[spaceships.size() - 1].endXPos && bullets[i].yPos >= spaceships[spaceships.size() - 1].startYPos && bullets[i].yPos <= spaceships[spaceships.size() - 1].endYPos)
+        {
+            bullets.erase(bullets.begin() + i);
+            damage(spaceships[spaceships.size() - 1]);
+            if (spaceships[spaceships.size() - 1].health == 0)
+            {
+                increaseScore(score, spaceships[spaceships.size() - 1].type);
+                createEnemy(spaceships, size);
+            }
+        }
+    }
+    if (spaceships[spaceships.size() - 1].endYPos == size - 1)
+    {
+        spaceships[spaceships.size() - 1].health = 0;
+        damage(spaceships[0]);
+        createEnemy(spaceships, size);
+    }
+    if (spaceships[0].health == 0)
+    {
+        gameOver(false);
+    }
+    if (score >= goalScore)
+    {
+        gameOver(true);
+    }
 }
 
 void createEnemy(vector<Spaceship> &spaceships, int size)
@@ -483,6 +538,51 @@ void createEnemy(vector<Spaceship> &spaceships, int size)
         enemy.health = 6;
     }
     spaceships.push_back(enemy);
+}
+
+void increaseScore(int &score, string type)
+{
+    if (type == "Dart")
+    {
+        score += 2;
+    }
+    else if (type == "Striker")
+    {
+        score += 8;
+    }
+    else if (type == "Wraith")
+    {
+        score += 18;
+    }
+    else
+    {
+        score += 32;
+    }
+}
+
+void damage(Spaceship &spaceship)
+{
+    if (spaceship.health != 0)
+    {
+        spaceship.health--;
+        return;
+    }
+}
+
+void gameOver(bool win)
+{
+    clearScreen();
+    if (win)
+    {
+        cout << "You win!" << endl;
+    }
+    else
+    {
+        cout << "You lose!" << endl;
+    }
+    cout << "press any key to back to main menu" << endl;
+    _getch();
+    mainMenu();
 }
 
 void hideCursor()
