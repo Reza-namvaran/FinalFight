@@ -3,10 +3,14 @@
 #include <conio.h>
 #include <windows.h>
 #include <fstream>
+#include <ctime>
 
 #define colorBlue "\033[0;34m"
 #define colorRed "\033[0;31m"
+#define colorWhite "\u001b[37m"
 #define colorYellow "\033[33m"
+#define colorGreen "\u001b[32m"
+#define colorMagenta "\u001b[35m"
 #define resetColor "\033[0m"
 
 using namespace std;
@@ -26,10 +30,12 @@ void runGame();
 void clearScreen();
 void hideCursor();
 void mainMenu();
+void runningMenu(int health, int score, int size);
 string selectMode();
 void generateGame(string);
-void generateMap(int, vector<vector<string>> &map, Spaceship spaceship);
-void move(Spaceship &spaceship, int, char);
+void generateMap(int, vector<vector<string>> &map, vector<Spaceship>, vector<Bullet>, int);
+void move(vector<Spaceship> &spaceships, int, char, vector<Bullet> &bullets);
+void createEnemy(vector<Spaceship> &spaceships, int);
 
 int main()
 {
@@ -267,11 +273,11 @@ string selectMode()
     return "back";
 }
 
-void runningMenu()
+void runningMenu(int health, int score, int size)
 {
-    cout << resetColor << colorRed << "----------------------------" << endl;
-    cout << "|  p => Pause , e => Exit  |" << endl;
-    cout << "----------------------------" << resetColor << endl;
+    cout << resetColor << colorRed << "-----------------------------------------------------------------------" << endl;
+    cout << "|  p => Pause , e => Exit  |  Health : " << health << " , Score : " << score << " , Map Size : " << size << "  |" << endl;
+    cout << "-----------------------------------------------------------------------" << resetColor << endl;
 }
 
 void generateGame(string gameType)
@@ -295,6 +301,7 @@ void generateGame(string gameType)
             _getch();
             size++;
         }
+        int score = 0;
         vector<vector<string>> map(size, vector<string>(size));
         vector<Spaceship> spaceships;
         vector<Bullet> bullets;
@@ -304,7 +311,8 @@ void generateGame(string gameType)
         spaceship.startXPos = size / 2;
         spaceship.health = 3;
         spaceships.push_back(spaceship);
-        generateMap(size, map, spaceships[0]);
+        createEnemy(spaceships, size);
+        generateMap(size, map, spaceships, bullets, score);
 
         while (true)
         {
@@ -313,8 +321,8 @@ void generateGame(string gameType)
                 char ch = _getch();
                 if (ch == 'a' || ch == 'd')
                 {
-                    move(spaceships[0], size, ch);
-                    generateMap(size, map, spaceships[0]);
+                    move(spaceships, size, ch, bullets);
+                    generateMap(size, map, spaceships, bullets, score);
                 }
                 else if (ch == 'e')
                 {
@@ -334,11 +342,11 @@ void generateGame(string gameType)
     }
 }
 
-void generateMap(int size, vector<vector<string>> &map, Spaceship spaceship)
+void generateMap(int size, vector<vector<string>> &map, vector<Spaceship> spaceships, vector<Bullet> bullets, int score)
 {
     clearScreen();
-    runningMenu();
-    string space = "#";
+    runningMenu(spaceships[0].health, score, size);
+    string userSpaceship = "#", enemy = "*", bullet = "^";
 
     for (int i = 0; i <= size; i++)
     {
@@ -354,9 +362,37 @@ void generateMap(int size, vector<vector<string>> &map, Spaceship spaceship)
 
         for (int k = 0; k < size; k++)
         {
-            if (i == spaceship.startYPos && k == spaceship.startXPos)
+            for (int h = 0; h < bullets.size(); h++)
             {
-                cout << colorBlue << "| " << resetColor << colorRed << space << resetColor << " ";
+                if (i == bullets[h].yPos && k == bullets[h].xPos)
+                {
+                    cout << colorBlue << "| " << resetColor << colorRed << bullet << resetColor << " ";
+                }
+            }
+            if (i == spaceships[0].startYPos && k == spaceships[0].startXPos)
+            {
+                cout << colorBlue << "| " << resetColor << colorRed << userSpaceship << resetColor << " ";
+            }
+            else if (i >= spaceships[spaceships.size() - 1].startYPos && i <= spaceships[spaceships.size() - 1].endYPos && k >= spaceships[spaceships.size() - 1].startXPos && k <= spaceships[spaceships.size() - 1].endXPos)
+            {
+                cout << colorBlue << "| " << resetColor;
+                if (spaceships[spaceships.size() - 1].type == "Dart")
+                {
+                    cout << colorWhite;
+                }
+                else if (spaceships[spaceships.size() - 1].type == "Striker")
+                {
+                    cout << colorGreen;
+                }
+                else if (spaceships[spaceships.size() - 1].type == "Wraith")
+                {
+                    cout << colorYellow;
+                }
+                else
+                {
+                    cout << colorMagenta;
+                }
+                cout << userSpaceship << resetColor << " ";
             }
             else
             {
@@ -372,23 +408,78 @@ void generateMap(int size, vector<vector<string>> &map, Spaceship spaceship)
     }
 }
 
-void move(Spaceship &spaceship, int size, char direction)
+void move(vector<Spaceship> &spaceships, int size, char direction, vector<Bullet> &bullets)
 {
     switch (direction)
     {
     case 'a':
-        if (spaceship.startXPos > 0)
+        if (spaceships[0].startXPos > 0)
         {
-            spaceship.startXPos--;
+            spaceships[0].startXPos--;
         }
         break;
     case 'd':
-        if (spaceship.startXPos < size - 1)
+        if (spaceships[0].startXPos < size - 1)
         {
-            spaceship.startXPos++;
+            spaceships[0].startXPos++;
         }
         break;
     }
+    spaceships[spaceships.size() - 1].startYPos++;
+    spaceships[spaceships.size() - 1].endYPos++;
+    for (int i = 0; i < bullets.size(); i++)
+    {
+        bullets[i].yPos--;
+    }
+    Bullet newBullet;
+    newBullet.xPos = spaceships[0].startXPos;
+    newBullet.yPos = spaceships[0].startYPos - 1;
+    bullets.push_back(newBullet);
+}
+
+void createEnemy(vector<Spaceship> &spaceships, int size)
+{
+    string enemyTypes[4] = {"Dart", "Striker", "Wraith", "Banshee"};
+    Spaceship enemy;
+    srand(time(0));
+    enemy.type = enemyTypes[rand() % 4];
+    if (enemy.type == enemyTypes[0])
+    {
+        int startXPos = rand() % size;
+        enemy.startXPos = startXPos;
+        enemy.endXPos = enemy.startXPos;
+        enemy.startYPos = 0;
+        enemy.endYPos = 0;
+        enemy.health = 1;
+    }
+    else if (enemy.type == enemyTypes[1])
+    {
+        int startXPos = rand() % (size - 1);
+        enemy.startXPos = startXPos;
+        enemy.endXPos = startXPos + 1;
+        enemy.startYPos = -1;
+        enemy.endYPos = 0;
+        enemy.health = 2;
+    }
+    else if (enemy.type == enemyTypes[2])
+    {
+        int startXPos = rand() % (size - 2);
+        enemy.startXPos = startXPos;
+        enemy.endXPos = startXPos + 2;
+        enemy.startYPos = -2;
+        enemy.endYPos = 0;
+        enemy.health = 4;
+    }
+    else
+    {
+        int startXPos = rand() % (size - 3);
+        enemy.startXPos = startXPos;
+        enemy.endXPos = startXPos + 3;
+        enemy.startYPos = -3;
+        enemy.endYPos = 0;
+        enemy.health = 6;
+    }
+    spaceships.push_back(enemy);
 }
 
 void hideCursor()
