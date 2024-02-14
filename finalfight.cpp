@@ -362,10 +362,12 @@ void generateMap(int size, vector<vector<string>> &map, vector<Spaceship> spaces
 
         for (int k = 0; k < size; k++)
         {
+            bool isBullet = false;
             for (int h = 0; h < bullets.size(); h++)
             {
                 if (i == bullets[h].yPos && k == bullets[h].xPos)
                 {
+                    isBullet = true;
                     cout << colorBlue << "| " << resetColor << colorRed << bullet << resetColor << " ";
                 }
             }
@@ -396,7 +398,8 @@ void generateMap(int size, vector<vector<string>> &map, vector<Spaceship> spaces
             }
             else
             {
-                cout << colorBlue << "|   " << resetColor;
+                if (!isBullet)
+                    cout << colorBlue << "|   " << resetColor;
             }
             if (k == size - 1)
             {
