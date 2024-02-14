@@ -267,6 +267,13 @@ string selectMode()
     return "back";
 }
 
+void runningMenu()
+{
+    cout << resetColor << colorRed << "----------------------------" << endl;
+    cout << "|  p => Pause , e => Exit  |" << endl;
+    cout << "----------------------------" << resetColor << endl;
+}
+
 void generateGame(string gameType)
 {
     if (gameType == "basic")
@@ -309,8 +316,13 @@ void generateGame(string gameType)
                     move(spaceships[0], size, ch);
                     generateMap(size, map, spaceships[0]);
                 }
+                else if (ch == 'e')
+                {
+                    break;
+                }
                 else if (ch == 'p')
                 {
+                    // save game
                     break;
                 }
             }
@@ -325,6 +337,7 @@ void generateGame(string gameType)
 void generateMap(int size, vector<vector<string>> &map, Spaceship spaceship)
 {
     clearScreen();
+    runningMenu();
     string space = "#";
 
     for (int i = 0; i <= size; i++)
