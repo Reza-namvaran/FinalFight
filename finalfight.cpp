@@ -11,18 +11,25 @@
 
 using namespace std;
 
-struct postion
+struct Spaceship
 {
-    int x_Position;
-    int y_Position;
+    string type;
+    int startXPos, startYPos, endXPos, endYPos, health;
+};
+
+struct Bullet
+{
+    int xPos, yPos;
 };
 
 void runGame();
 void clearScreen();
 void hideCursor();
 void mainMenu();
-void generateMap(int size, int state, vector<vector<string>> &map);
-void move(vector<vector<string>> &map, int size, char direction);
+string selectMode();
+void generateGame(string);
+void generateMap(int, vector<vector<string>> &map, Spaceship spaceship);
+void move(Spaceship &spaceship, int, char);
 
 int main()
 {
@@ -35,35 +42,6 @@ void runGame()
     clearScreen();
     hideCursor();
     mainMenu();
-    int size;
-    cout << "Please Enter the size of the map: ";
-    cin >> size;
-    if (size % 2 == 0)
-    {
-        cout << "Notice: You've entered an Even number for the size while it should be an odd number!" << endl;
-        cout << "The size has incremented by one automatically. Press any key to continue" << endl;
-        _getch();
-        size++;
-    }
-    vector<vector<string>> map(size, vector<string>(size));
-    generateMap(size, 0, map);
-
-    while (true)
-    {
-        if (_kbhit())
-        {
-            char ch = _getch();
-            if (ch == 'a' || ch == 'd')
-            {
-                move(map, size, ch);
-                generateMap(size, 1, map);
-            }
-            else if (ch == 'p')
-            {
-                break;
-            }
-        }
-    }
 }
 
 void mainMenu()
@@ -149,7 +127,15 @@ void mainMenu()
             if (ch == 13)
             {
                 clearScreen();
-                return;
+                string mode = selectMode();
+                if (mode == "back")
+                {
+                    mainMenu();
+                }
+                else if (mode == "basic")
+                {
+                    generateGame("basic");
+                }
             }
             break;
         case 1:
@@ -171,15 +157,176 @@ void mainMenu()
     exit(0);
 }
 
-void generateMap(int size, int state, vector<vector<string>> &map)
+string selectMode()
+{
+    char ch;
+    string basic = "Basic", advanced = "Advanced", back = "<- Back";
+    basic = colorYellow + basic + resetColor;
+    int j = 2;
+
+    do
+    {
+        clearScreen();
+        cout << "__|";
+        for (int i = 0; i < 33; i++)
+        {
+            cout << "_";
+        }
+        cout << "|__" << endl;
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (i == 2)
+            {
+                cout << "  |              " << basic << "              |" << endl;
+            }
+            else if (i == 4)
+            {
+                cout << "  |             " << advanced << "            |" << endl;
+            }
+            else if (i == 6)
+            {
+                cout << "  |             " << back << "             |" << endl;
+            }
+            else
+            {
+                cout << "  |";
+                for (int j = 0; j < 33; j++)
+                {
+                    cout << " ";
+                }
+                cout << "|" << endl;
+            }
+        }
+
+        cout << "__|";
+        for (int i = 0; i < 33; i++)
+        {
+            cout << "_";
+        }
+        cout << "|__" << endl;
+        for (int i = 0; i < 37; i++)
+        {
+            if (i == 2 || i == 36)
+            {
+                cout << "|";
+            }
+            else
+            {
+                cout << " ";
+            }
+        }
+        ch = _getch();
+
+        if (ch == 72)
+        {
+            j++;
+            if (j > 2)
+                j = 0;
+        }
+        else if (ch == 80)
+        {
+            j--;
+            if (j < 0)
+                j = 2;
+        }
+
+        switch (j)
+        {
+        case 2:
+            basic = colorYellow + basic + resetColor;
+            advanced = "Advanced";
+            back = "<- Back";
+            if (ch == 13)
+            {
+                clearScreen();
+                return "basic";
+            }
+            break;
+        case 1:
+            basic = "Basic";
+            advanced = colorYellow + advanced + resetColor;
+            back = "<- Back";
+            if (ch == 13)
+            {
+                clearScreen();
+                return "advanced";
+            }
+            break;
+        case 0:
+            basic = "Basic";
+            advanced = "Advanced";
+            back = colorYellow + back + resetColor;
+            if (ch == 13)
+            {
+                clearScreen();
+                return "back";
+            }
+        }
+    } while (ch != 27);
+    return "back";
+}
+
+void generateGame(string gameType)
+{
+    if (gameType == "basic")
+    {
+        int size;
+        do
+        {
+            cout << "Please Enter the size of the map: ";
+            cin >> size;
+            if (size < 15)
+            {
+                cout << "Notice: The minimum size of map is 15, try greater size!" << endl;
+            }
+        } while (size < 15);
+        if (size % 2 == 0)
+        {
+            cout << "Notice: You've entered an Even number for the size while it should be an odd number!" << endl;
+            cout << "The size has incremented by one automatically. Press any key to continue" << endl;
+            _getch();
+            size++;
+        }
+        vector<vector<string>> map(size, vector<string>(size));
+        vector<Spaceship> spaceships;
+        vector<Bullet> bullets;
+        Spaceship spaceship;
+        spaceship.type = "user";
+        spaceship.startYPos = size - 1;
+        spaceship.startXPos = size / 2;
+        spaceship.health = 3;
+        spaceships.push_back(spaceship);
+        generateMap(size, map, spaceships[0]);
+
+        while (true)
+        {
+            if (_kbhit())
+            {
+                char ch = _getch();
+                if (ch == 'a' || ch == 'd')
+                {
+                    move(spaceships[0], size, ch);
+                    generateMap(size, map, spaceships[0]);
+                }
+                else if (ch == 'p')
+                {
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        /* code */
+    }
+}
+
+void generateMap(int size, vector<vector<string>> &map, Spaceship spaceship)
 {
     clearScreen();
     string space = "#";
 
-    if (state == 0)
-    {
-        map[size - 1][size / 2] = space;
-    }
     for (int i = 0; i <= size; i++)
     {
         for (int j = 0; j < size; j++)
@@ -194,7 +341,7 @@ void generateMap(int size, int state, vector<vector<string>> &map)
 
         for (int k = 0; k < size; k++)
         {
-            if (map[i][k] == "#")
+            if (i == spaceship.startYPos && k == spaceship.startXPos)
             {
                 cout << colorBlue << "| " << resetColor << colorRed << space << resetColor << " ";
             }
@@ -212,25 +359,22 @@ void generateMap(int size, int state, vector<vector<string>> &map)
     }
 }
 
-void move(vector<vector<string>> &map, int size, char direction)
+void move(Spaceship &spaceship, int size, char direction)
 {
-    for (int j = 0; j < size; ++j)
+    switch (direction)
     {
-        if (map[size - 1][j] == "#")
+    case 'a':
+        if (spaceship.startXPos > 0)
         {
-            map[size - 1][j] = " ";
-            if (direction == 'a' && j > 0)
-            {
-                map[size - 1][j - 1] = "#";
-            }
-            else if (direction == 'd' && j < size - 1)
-            {
-                map[size - 1][j + 1] = "#";
-            }
-            else if (j == 0 || j == size - 1)
-                map[size - 1][j] = "#";
-            return;
+            spaceship.startXPos--;
         }
+        break;
+    case 'd':
+        if (spaceship.startXPos < size - 1)
+        {
+            spaceship.startXPos++;
+        }
+        break;
     }
 }
 
