@@ -4,112 +4,125 @@
 #include <windows.h>
 #include <fstream>
 
-
 #define colorBlue "\033[0;34m"
-#define colorRed "\033[0;31m" 
+#define colorRed "\033[0;31m"
 #define colorYellow "\033[33m"
 #define resetColor "\033[0m"
 
+using namespace std;
+
 struct postion
 {
-    int x_Posiotion;
-    int y_Posiotion;
+    int x_Position;
+    int y_Position;
 };
-
 
 void runGame();
 void clearScreen();
 void hideCursor();
 void mainMenu();
-void generateMap(int size, int state, std::vector<std::vector<std::string>> & map);
-void move(std::vector<std::vector<std::string>> &map, int size, char direction);
+void generateMap(int size, int state, vector<vector<string>> &map);
+void move(vector<vector<string>> &map, int size, char direction);
 
-int main(){
+int main()
+{
     runGame();
     return 0;
 }
 
-void runGame(){
+void runGame()
+{
     clearScreen();
     hideCursor();
     mainMenu();
     int size;
-    std::cout << "Please Enter the size of the map: ";
-    std::cin >> size;
-    if(size % 2 == 0)
+    cout << "Please Enter the size of the map: ";
+    cin >> size;
+    if (size % 2 == 0)
     {
-        std::cout << "Notice: You've entered an Even number for the size while it should be an odd number!" << std::endl;
-        std::cout << "The size has incremented by one automatically. Press any key to continue" << std::endl;
+        cout << "Notice: You've entered an Even number for the size while it should be an odd number!" << endl;
+        cout << "The size has incremented by one automatically. Press any key to continue" << endl;
         _getch();
-        size++; 
-    }   
-    std::vector<std::vector<std::string>> map(size, std::vector<std::string>(size));
+        size++;
+    }
+    vector<vector<string>> map(size, vector<string>(size));
     generateMap(size, 0, map);
 
-    while (true) {
-        if (_kbhit()) {
+    while (true)
+    {
+        if (_kbhit())
+        {
             char ch = _getch();
-            if (ch == 'a' || ch == 'd') {
+            if (ch == 'a' || ch == 'd')
+            {
                 move(map, size, ch);
                 generateMap(size, 1, map);
-            } else if (ch == 'p') {
+            }
+            else if (ch == 'p')
+            {
                 break;
             }
         }
     }
 }
 
-void mainMenu(){
+void mainMenu()
+{
     char ch;
-    std::string start = "Start Game", change = "Change Spaceship", exit = "Exit";
+    string start = "Start Game", change = "Change Spaceship", exitOption = "Exit";
+    start = colorYellow + start + resetColor;
     int j = 2;
-    
 
     do
     {
         clearScreen();
-        std::cout << "__|";
-        for(int i = 0; i < 33; i++){
-            std::cout << "_";
+        cout << "__|";
+        for (int i = 0; i < 33; i++)
+        {
+            cout << "_";
         }
-        std::cout << "|__" << std::endl;
+        cout << "|__" << endl;
 
-        
-
-        for(int i = 0; i < 10; i++){
-            if(i == 2)
+        for (int i = 0; i < 10; i++)
+        {
+            if (i == 2)
             {
-                std::cout << "  |           " << start << "            |" <<  std::endl;
+                cout << "  |           " << start << "            |" << endl;
             }
-            else if(i == 4)
+            else if (i == 4)
             {
-                std::cout << "  |        " << change << "         |" << std::endl;
+                cout << "  |        " << change << "         |" << endl;
             }
-            else if(i == 6)
+            else if (i == 6)
             {
-                std::cout << "  |              " << exit << "               |" << std::endl;
+                cout << "  |              " << exitOption << "               |" << endl;
             }
             else
             {
-                std::cout << "  |";
-                for(int j = 0; j < 33; j++){
-                    std::cout << " ";
+                cout << "  |";
+                for (int j = 0; j < 33; j++)
+                {
+                    cout << " ";
                 }
-                std::cout << "|" << std::endl;
+                cout << "|" << endl;
             }
         }
-        
-        std::cout << "__|";
-        for (int i = 0; i < 33; i++){
-            std::cout << "_";
+
+        cout << "__|";
+        for (int i = 0; i < 33; i++)
+        {
+            cout << "_";
         }
-        std::cout << "|__" << std::endl;
-        for(int i = 0; i < 37; i++){
-            if(i == 2 || i == 36){
-                std::cout << "|";
+        cout << "|__" << endl;
+        for (int i = 0; i < 37; i++)
+        {
+            if (i == 2 || i == 36)
+            {
+                cout << "|";
             }
-            else{
-                std::cout << " ";
+            else
+            {
+                cout << " ";
             }
         }
         ch = _getch();
@@ -117,13 +130,13 @@ void mainMenu(){
         if (ch == 72)
         {
             j++;
-            if(j > 2)
+            if (j > 2)
                 j = 0;
         }
         else if (ch == 80)
         {
             j--;
-            if(j < 0)
+            if (j < 0)
                 j = 2;
         }
 
@@ -131,88 +144,94 @@ void mainMenu(){
         {
         case 2:
             start = colorYellow + start + resetColor;
-            change = "Change Spaceship"; 
-            exit = "Exit";
-            if(ch == 13){
+            change = "Change Spaceship";
+            exitOption = "Exit";
+            if (ch == 13)
+            {
                 clearScreen();
                 return;
             }
             break;
-        
         case 1:
             start = "Start Game";
             change = colorYellow + change + resetColor;
-            exit = "Exit";
+            exitOption = "Exit";
             break;
         case 0:
             start = "Start Game";
             change = "Change Spaceship";
-            exit = colorYellow + exit + resetColor;
-            if(ch == 13){
+            exitOption = colorYellow + exitOption + resetColor;
+            if (ch == 13)
+            {
                 clearScreen();
-                std::exit(0);
+                exit(0);
             }
         }
     } while (ch != 27);
-    std::exit(0);
-    
+    exit(0);
 }
 
-void generateMap(int size, int state, std::vector<std::vector<std::string>> & map){
+void generateMap(int size, int state, vector<vector<string>> &map)
+{
     clearScreen();
-    std::string space = "#";
+    string space = "#";
 
-    
     if (state == 0)
-    { 
+    {
         map[size - 1][size / 2] = space;
     }
-    for(int i = 0; i <= size; i++)
+    for (int i = 0; i <= size; i++)
     {
-        for(int j = 0; j < size; j++)
+        for (int j = 0; j < size; j++)
         {
-            std::cout << colorBlue << " ---" << resetColor;
+            cout << colorBlue << " ---" << resetColor;
         }
 
-        std::cout << std::endl;
+        cout << endl;
 
-        if(i == size)
+        if (i == size)
             continue;
 
-        for(int k = 0; k < size; k++)
-        {   
+        for (int k = 0; k < size; k++)
+        {
             if (map[i][k] == "#")
             {
-            std::cout << colorBlue << "| " << resetColor << colorRed << space << resetColor << " ";
+                cout << colorBlue << "| " << resetColor << colorRed << space << resetColor << " ";
             }
-            else{
-                std::cout << colorBlue << "|   " << resetColor;
+            else
+            {
+                cout << colorBlue << "|   " << resetColor;
             }
             if (k == size - 1)
             {
-                std::cout << colorBlue << "|" << resetColor;
+                cout << colorBlue << "|" << resetColor;
             }
         }
 
-        std::cout << std::endl;
+        cout << endl;
     }
 }
 
-void move(std::vector<std::vector<std::string>> &map, int size, char direction) {
-        for (int j = 0; j < size; ++j) {
-            if (map[size - 1][j] == "#") {
-                map[size - 1][j] = " ";
-                if (direction == 'a' && j > 0) {
-                    map[size - 1][j - 1] = "#";
-                } else if (direction == 'd' && j < size - 1) {
-                    map[size - 1][j + 1] = "#";
-                }
-                else if(j == 0 || j == size - 1) 
-                    map[size - 1][j] = "#";
-                return;
+void move(vector<vector<string>> &map, int size, char direction)
+{
+    for (int j = 0; j < size; ++j)
+    {
+        if (map[size - 1][j] == "#")
+        {
+            map[size - 1][j] = " ";
+            if (direction == 'a' && j > 0)
+            {
+                map[size - 1][j - 1] = "#";
             }
+            else if (direction == 'd' && j < size - 1)
+            {
+                map[size - 1][j + 1] = "#";
+            }
+            else if (j == 0 || j == size - 1)
+                map[size - 1][j] = "#";
+            return;
         }
-    
+    }
 }
 
 void hideCursor()
@@ -224,13 +243,14 @@ void hideCursor()
     SetConsoleCursorInfo(consoleHandle, &info);
 }
 
-// this function is used when we want to clear the termial screen
-void clearScreen(){
-    #ifdef _WIN32
-        // for windows
-        system("CLS");
-    #else
-        // for other oprating systems
-        system("clear");
-    #endif
+// this function is used when we want to clear the terminal screen
+void clearScreen()
+{
+#ifdef _WIN32
+    // for windows
+    system("CLS");
+#else
+    // for other operating systems
+    system("clear");
+#endif
 }
