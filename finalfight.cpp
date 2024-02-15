@@ -35,7 +35,9 @@ string selectMode();
 void generateGame(string);
 void generateMap(int, vector<vector<string>> &map, vector<Spaceship>, vector<Bullet>, int);
 void move(vector<Spaceship> &spaceships, int &score, int, int, char, vector<Bullet> &bullets);
+void shot(vector<Bullet> &bullets, Spaceship);
 void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int, int);
+void refreshPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int, int);
 void createEnemy(vector<Spaceship> &spaceships, int);
 void increaseScore(int &score, string);
 void damage(Spaceship &spaceship);
@@ -340,6 +342,13 @@ void generateGame(string gameType)
                     move(spaceships, score, size, goalScore, ch, bullets);
                     generateMap(size, map, spaceships, bullets, score);
                 }
+                else if (ch == 's')
+                {
+                    refreshPositions(spaceships, bullets, score, goalScore, size);
+                    shot(bullets, spaceships[0]);
+                    checkPositions(spaceships, bullets, score, goalScore, size);
+                    generateMap(size, map, spaceships, bullets, score);
+                }
                 else if (ch == 'e')
                 {
                     break;
@@ -446,22 +455,17 @@ void move(vector<Spaceship> &spaceships, int &score, int size, int goalScore, ch
         break;
     }
     checkPositions(spaceships, bullets, score, goalScore, size);
-
-    spaceships[spaceships.size() - 1].startYPos++;
-    spaceships[spaceships.size() - 1].endYPos++;
+    refreshPositions(spaceships, bullets, score, goalScore, size);
+    shot(bullets, spaceships[0]);
     checkPositions(spaceships, bullets, score, goalScore, size);
+}
 
-    for (int i = 0; i < bullets.size(); i++)
-    {
-        bullets[i].yPos--;
-    }
-    checkPositions(spaceships, bullets, score, goalScore, size);
-
+void shot(vector<Bullet> &bullets, Spaceship spaceship)
+{
     Bullet newBullet;
-    newBullet.xPos = spaceships[0].startXPos;
-    newBullet.yPos = spaceships[0].startYPos - 1;
+    newBullet.xPos = spaceship.startXPos;
+    newBullet.yPos = spaceship.startYPos - 1;
     bullets.push_back(newBullet);
-    checkPositions(spaceships, bullets, score, goalScore, size);
 }
 
 void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int goalScore, int size)
@@ -493,6 +497,19 @@ void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int 
     {
         gameOver(true);
     }
+}
+
+void refreshPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int goalScore, int size)
+{
+    spaceships[spaceships.size() - 1].startYPos++;
+    spaceships[spaceships.size() - 1].endYPos++;
+    checkPositions(spaceships, bullets, score, goalScore, size);
+
+    for (int i = 0; i < bullets.size(); i++)
+    {
+        bullets[i].yPos--;
+    }
+    checkPositions(spaceships, bullets, score, goalScore, size);
 }
 
 void createEnemy(vector<Spaceship> &spaceships, int size)
