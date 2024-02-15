@@ -3,6 +3,7 @@
 #include <conio.h>
 #include <windows.h>
 #include <fstream>
+#include <sstream>
 #include <ctime>
 
 #define colorBlue "\033[0;34m"
@@ -30,10 +31,11 @@ void runGame();
 void clearScreen();
 void hideCursor();
 void mainMenu();
-void runningMenu(int, int, int);
+void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore);
+void statusBar(int, int, int);
 string selectMode();
 void generateGame(string);
-void generateMap(int, vector<vector<string>> &map, vector<Spaceship>, vector<Bullet>, int);
+void generateMap(int, vector<Spaceship>, vector<Bullet>, int);
 void move(vector<Spaceship> &spaceships, int &score, int, int &goalScore, char, vector<Bullet> &bullets);
 void shot(vector<Bullet> &bullets, Spaceship);
 void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int &goalScore, int);
@@ -59,9 +61,9 @@ void runGame()
 void mainMenu()
 {
     char ch;
-    string start = "Start Game", change = "Change Spaceship", exitOption = "Exit";
+    string start = "Start Game", loadgame = "Load Game", exitOption = "Exit";
     start = colorYellow + start + resetColor;
-    int j = 2;
+    int j = 2, GameCount;
 
     do
     {
@@ -77,15 +79,15 @@ void mainMenu()
         {
             if (i == 2)
             {
-                cout << "  |           " << start << "            |" << endl;
+                cout << "  |            " << start << "           |" << endl;
             }
             else if (i == 4)
             {
-                cout << "  |        " << change << "         |" << endl;
+                cout << "  |             " << loadgame << "           |" << endl;
             }
             else if (i == 6)
             {
-                cout << "  |              " << exitOption << "               |" << endl;
+                cout << "  |               " << exitOption << "              |" << endl;
             }
             else
             {
@@ -134,7 +136,7 @@ void mainMenu()
         {
         case 2:
             start = colorYellow + start + resetColor;
-            change = "Change Spaceship";
+            loadgame = "Load Game";
             exitOption = "Exit";
             if (ch == 13)
             {
@@ -147,17 +149,22 @@ void mainMenu()
                 else if (mode == "basic")
                 {
                     generateGame("basic");
+                    // addGame() -> GameCout++
                 }
             }
             break;
         case 1:
             start = "Start Game";
-            change = colorYellow + change + resetColor;
+            loadgame = colorYellow + loadgame + resetColor;
             exitOption = "Exit";
+            if(ch == 13)
+            {
+                generateGame("basic_load");
+            }
             break;
         case 0:
             start = "Start Game";
-            change = "Change Spaceship";
+            loadgame = "Load Game";
             exitOption = colorYellow + exitOption + resetColor;
             if (ch == 13)
             {
@@ -279,25 +286,65 @@ string selectMode()
     return "back";
 }
 
-void runningMenu(int health, int score, int size)
+void statusBar(int health, int score, int size)
 {
     cout << resetColor << colorRed << "-----------------------------------------------------------------------" << endl;
     cout << "|  p => Pause , e => Exit  |  Health : " << health << " , Score : " << score << " , Map Size : " << size << "  |" << endl;
     cout << "-----------------------------------------------------------------------" << resetColor << endl;
 }
 
+void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore){
+    ifstream load;
+    load.open(filename);
+    int gameCount;
+    string line;
+    Bullet bullet;
+    Spaceship character;
+
+    if(!load.is_open())
+    {
+        cerr << "can't open the file" << endl;
+    }
+    else
+    {
+        load >> gameCount;
+        if ( gameCount == 0 )
+        {
+            cout << "There are no games, Please Start a new game" << endl;
+            cout << "Enter any key to go back" << endl;
+            _getch();
+            return;
+        }
+        else
+        {
+            load >> size >> goalScore >> currentScore;
+            while(!load.eof())
+            {
+                load >> character.type >> character.startXPos >> character.endXPos >> character.startYPos >> character.endYPos >> character.health;
+                spaceships.push_back(character);
+            }
+            
+        }
+    }
+}
+
 void generateGame(string gameType)
 {
+    int size, goalScore, score;
+    vector<Spaceship> spaceships;
+    vector<Bullet> bullets;
+    Spaceship spaceship;
+
     if (gameType == "basic")
     {
-        int size, goalScore;
+        score = 0;
         do
         {
             cout << "Please Enter the size of the map (minimum 15) : ";
             cin >> size;
             if (size < 15)
             {
-                cout << "Notice: The minimum size of map is 15, try greater size!" << endl;
+                cout << "Notice: The minimum size of map is 15, try a greater size!" << endl;
             }
         } while (size < 15);
 
@@ -313,65 +360,63 @@ void generateGame(string gameType)
         {
             cout << "Please Enter your goal score (minimum 20) : ";
             cin >> goalScore;
-            if (size < 15)
+            if (size < 20)
             {
-                cout << "Notice: The minimum score is 20, try greater score!" << endl;
+                cout << "Notice: The minimum score is 20, try a greater score!" << endl;
             }
         } while (goalScore < 20);
 
-        int score = 0;
-        vector<vector<string>> map(size, vector<string>(size));
-        vector<Spaceship> spaceships;
-        vector<Bullet> bullets;
-        Spaceship spaceship;
+        
         spaceship.type = "user";
         spaceship.startYPos = size - 1;
         spaceship.startXPos = size / 2;
         spaceship.health = 3;
         spaceships.push_back(spaceship);
         createEnemy(spaceships, size);
-        generateMap(size, map, spaceships, bullets, score);
-
-        while (true)
+        generateMap(size, spaceships, bullets, score);
+    }
+    else if (gameType == "basic_load")
+    {
+        clearScreen();
+        readSavedGames("savegames.txt", spaceships, bullets, size, goalScore, score);
+        generateMap(size, spaceships, bullets, score);
+    }
+    while (true)
+    {
+        if (_kbhit())
         {
-            if (_kbhit())
+            char ch = _getch();
+            if (ch == 'a' || ch == 'd')
             {
-                char ch = _getch();
-                if (ch == 'a' || ch == 'd')
-                {
-                    move(spaceships, score, size, goalScore, ch, bullets);
-                    generateMap(size, map, spaceships, bullets, score);
-                }
-                else if (ch == 's')
-                {
-                    refreshPositions(spaceships, bullets, score, goalScore, size);
-                    shot(bullets, spaceships[0]);
-                    checkPositions(spaceships, bullets, score, goalScore, size);
-                    generateMap(size, map, spaceships, bullets, score);
-                }
-                else if (ch == 'e')
-                {
-                    break;
-                }
-                else if (ch == 'p')
-                {
-                    // save game
-                    break;
-                }
+                move(spaceships, score, size, goalScore, ch, bullets);
+                generateMap(size, spaceships, bullets, score);
+            }
+            else if (ch == 's')
+            {
+                refreshPositions(spaceships, bullets, score, goalScore, size);
+                shot(bullets, spaceships[0]);
+                checkPositions(spaceships, bullets, score, goalScore, size);
+                generateMap(size, spaceships, bullets, score);
+            }
+            else if (ch == 'e')
+            {
+                break;
+            }
+            else if (ch == 'p')
+            {
+                // save game
+                break;
             }
         }
     }
-    else
-    {
-        /* code */
-    }
+
 }
 
-void generateMap(int size, vector<vector<string>> &map, vector<Spaceship> spaceships, vector<Bullet> bullets, int score)
+void generateMap(int size, vector<Spaceship> spaceships, vector<Bullet> bullets, int score)
 {
     clearScreen();
-    runningMenu(spaceships[0].health, score, size);
-    string userSpaceship = "#", enemy = "*", bullet = "^";
+    statusBar(spaceships[0].health, score, size);
+    string userSpaceship = "@", enemy = "#", bullet = "^";
 
     for (int i = 0; i <= size; i++)
     {
@@ -419,7 +464,7 @@ void generateMap(int size, vector<vector<string>> &map, vector<Spaceship> spaces
                 {
                     cout << colorMagenta;
                 }
-                cout << userSpaceship << resetColor << " ";
+                cout << enemy << resetColor << " ";
             }
             else
             {
