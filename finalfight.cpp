@@ -313,7 +313,7 @@ void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bulle
             cout << "There are no games, Please Start a new game" << endl;
             cout << "Enter any key to go back" << endl;
             _getch();
-            return;
+            mainMenu();
         }
         else
         {
@@ -325,6 +325,34 @@ void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bulle
             }
             
         }
+
+        load.close();
+    }
+}
+
+void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, int currentScore, int goalScore){
+    ofstream output;
+    output.open("savegames.txt");
+
+    if(!output.is_open())
+    {
+        cerr << "Can't open file" << endl;
+    }
+    else
+    {
+        output << 2 << endl;
+
+        output << size << " " << goalScore << " " << currentScore << endl;
+
+        output << spaceships[0].type << " " << spaceships[0].startXPos << " " << spaceships[0].endXPos << " " << spaceships[0].startYPos << " " << spaceships[0].endYPos << " " << spaceships[0].health << endl;
+        output << spaceships[spaceships.size() - 1].type << " " << spaceships[spaceships.size() - 1].startXPos << " " << spaceships[spaceships.size() - 1].endXPos << " " << spaceships[spaceships.size() - 1].startYPos << " " << spaceships[spaceships.size() - 1].endYPos << " " << spaceships[spaceships.size() - 1].health << endl;
+        
+        for(int i = 0; i < bullets.size(); i++)
+        {
+            output << bullets[i].xPos << " " << bullets[i].yPos << " ";
+        }
+
+        output.close();
     }
 }
 
@@ -370,10 +398,13 @@ void generateGame(string gameType)
         spaceship.type = "user";
         spaceship.startYPos = size - 1;
         spaceship.startXPos = size / 2;
+        spaceship.endXPos = spaceship.startXPos;
+        spaceship.endYPos = 14;
         spaceship.health = 3;
         spaceships.push_back(spaceship);
         createEnemy(spaceships, size);
         generateMap(size, spaceships, bullets, score);
+        autoSave(spaceships, bullets, size, score, goalScore);
     }
     else if (gameType == "basic_load")
     {
@@ -407,6 +438,7 @@ void generateGame(string gameType)
                 // save game
                 break;
             }
+            autoSave(spaceships, bullets, size, score, goalScore);
         }
     }
 
@@ -499,6 +531,8 @@ void move(vector<Spaceship> &spaceships, int &score, int size, int &goalScore, c
         }
         break;
     }
+    spaceships[0].endXPos = spaceships[0].startXPos;
+    spaceships[0].endYPos = spaceships[0].startYPos;
     checkPositions(spaceships, bullets, score, goalScore, size);
     refreshPositions(spaceships, bullets, score, goalScore, size);
     shot(bullets, spaceships[0]);
