@@ -19,7 +19,7 @@ using namespace std;
 struct Spaceship
 {
     string type;
-    int startXPos, startYPos, endXPos, endYPos, health;
+    int startXPos, startYPos, endXPos = startXPos, endYPos = startYPos, health;
 };
 
 struct Bullet
@@ -318,12 +318,16 @@ void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bulle
         else
         {
             load >> size >> goalScore >> currentScore;
-            while(!load.eof())
+            for(int i = 0; i < 2; i++)
             {
                 load >> character.type >> character.startXPos >> character.endXPos >> character.startYPos >> character.endYPos >> character.health;
                 spaceships.push_back(character);
             }
-            
+            while(!load.eof())
+            {
+                load >> bullet.xPos >> bullet.yPos;
+                bullets.push_back(bullet);
+            }
         }
 
         load.close();
@@ -398,8 +402,6 @@ void generateGame(string gameType)
         spaceship.type = "user";
         spaceship.startYPos = size - 1;
         spaceship.startXPos = size / 2;
-        spaceship.endXPos = spaceship.startXPos;
-        spaceship.endYPos = 14;
         spaceship.health = 3;
         spaceships.push_back(spaceship);
         createEnemy(spaceships, size);
