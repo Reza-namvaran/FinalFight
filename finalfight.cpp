@@ -449,7 +449,12 @@ void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, in
         
         for(int i = 0; i < bullets.size(); i++)
         {
-            output << bullets[i].xPos << " " << bullets[i].yPos << " ";
+            if(i == bullets.size() - 1)
+                output << bullets[i].xPos << " " << bullets[i].yPos;
+            else
+            {
+                output << bullets[i].xPos << " " << bullets[i].yPos << " ";
+            }
         }
 
         output.close();
