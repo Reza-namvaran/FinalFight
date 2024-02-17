@@ -33,6 +33,7 @@ void hideCursor();
 void mainMenu();
 void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore);
 void statusBar(int, int, int);
+void pauseMenu();
 string selectMode();
 void generateGame(string);
 void generateMap(int, vector<Spaceship>, vector<Bullet>, int);
@@ -43,7 +44,7 @@ void refreshPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, in
 void createEnemy(vector<Spaceship> &spaceships, int);
 void increaseScore(int &score, string);
 void damage(Spaceship &spaceship);
-void gameOver(bool, int &goalScore);
+void gameOver(bool, int &goalScore, int score);
 
 int main()
 {
@@ -293,6 +294,101 @@ void statusBar(int health, int score, int size)
     cout << "-----------------------------------------------------------------------" << resetColor << endl;
 }
 
+void pauseMenu()
+{
+    char ch;
+    string Resume = "Resume", Exit = "Exit";
+    Resume = colorYellow + Resume + resetColor;
+    int selected = 1;
+
+    do
+    {
+        clearScreen();
+        cout << "__|";
+        for (int i = 0; i < 33; i++)
+        {
+            cout << "_";
+        }
+        cout << "|__" << endl;
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (i == 2)
+            {
+                cout << "  |              " << Resume << "             |" << endl;
+            }
+            else if (i == 4)
+            {
+                cout << "  |               " << Exit << "              |" << endl;
+            }
+            else
+            {
+                cout << "  |";
+                for (int j = 0; j < 33; j++)
+                {
+                    cout << " ";
+                }
+                cout << "|" << endl;
+            }
+        }
+
+        cout << "__|";
+        for (int i = 0; i < 33; i++)
+        {
+            cout << "_";
+        }
+        cout << "|__" << endl;
+        for (int i = 0; i < 37; i++)
+        {
+            if (i == 2 || i == 36)
+            {
+                cout << "|";
+            }
+            else
+            {
+                cout << " ";
+            }
+        }
+        ch = _getch();
+
+        if (ch == 72)
+        {
+            selected++;
+            if (selected > 1)
+                selected = 0;
+        }
+        else if (ch == 80)
+        {
+            selected--;
+            if (selected < 0)
+                selected = 1;
+        }
+
+        switch (selected)
+        {
+        case 1:
+            Resume = colorYellow + Resume + resetColor;
+            Exit = "Exit";
+            if (ch == 13)
+            {
+                clearScreen();
+                generateGame("basic_load");
+                return;
+            }
+            break;
+        case 0:
+            Resume = "Resume";
+            Exit = colorYellow + Exit + resetColor;
+            if (ch == 13)
+            {
+                clearScreen();
+                mainMenu();
+                return;
+            }
+        }
+    } while (ch != 27);
+}
+
 void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore){
     ifstream load;
     load.open(filename);
@@ -303,7 +399,7 @@ void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bulle
 
     if(!load.is_open())
     {
-        cerr << "can't open the file" << endl;
+        cerr << "Can't open the file" << endl;
     }
     else
     {
@@ -398,7 +494,7 @@ void generateGame(string gameType)
             }
         } while (goalScore < 20);
 
-        
+
         spaceship.type = "user";
         spaceship.startYPos = size - 1;
         spaceship.startXPos = size / 2;
@@ -411,6 +507,8 @@ void generateGame(string gameType)
     else if (gameType == "basic_load")
     {
         clearScreen();
+        spaceships.clear();
+        bullets.clear();
         readSavedGames("savegames.txt", spaceships, bullets, size, goalScore, score);
         generateMap(size, spaceships, bullets, score);
     }
@@ -437,7 +535,7 @@ void generateGame(string gameType)
             }
             else if (ch == 'p')
             {
-                // save game
+                pauseMenu();
                 break;
             }
             autoSave(spaceships, bullets, size, score, goalScore);
@@ -576,11 +674,11 @@ void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int 
     }
     if (spaceships[0].health == 0)
     {
-        gameOver(false, goalScore);
+        gameOver(false, goalScore, score);
     }
     if (score >= goalScore && goalScore != -1)
     {
-        gameOver(true, goalScore);
+        gameOver(true, goalScore, score);
     }
 }
 
@@ -671,13 +769,24 @@ void damage(Spaceship &spaceship)
     }
 }
 
-void gameOver(bool win, int &goalScore)
+void mkHistory(string status, int score, int goalScore, vector<Spaceship> &spaceships){
+    ofstream output;
+    output.open("history.txt");
+
+    
+}
+
+void gameOver(bool win, int &goalScore, int score)
 {
     clearScreen();
     if (win)
     {
-        cout << "You win!" << endl;
-        cout << "press c for continue game or b for back to menu";
+        cout << "\n   \\\\      //\\\\      //  ||    ||\\\\      || \n";
+        cout << "    \\\\    //  \\\\    //   ||    ||  \\\\    || \n";
+        cout << "     \\\\  //    \\\\  //    ||    ||    \\\\  || \n";
+        cout << "      \\\\//      \\\\//     ||    ||      \\\\|| \n\n";
+        
+        cout << "\n" << "Press c for entering the infinite mode or b for going back to the menu";
         char ch = _getch();
         switch (ch)
         {
@@ -691,9 +800,15 @@ void gameOver(bool win, int &goalScore)
         }
     }
     else
-    {
-        cout << "You lose!" << endl;
-        cout << "press any key to back to main menu" << endl;
+    {   
+        cout << "\n   ||             //||||||\\\\       ///|||||\\\\\\    ||\\\\\\\\\\\\\\\\\\\\\n";
+        cout << "   ||            ||        ||      \\\\       //    ||\n";
+        cout << "   ||            ||        ||         \\\\          ||\\\\\\\\\\\\\\\\\\\\\n";
+        cout << "   ||            ||        ||    //       \\\\      ||\n";
+        cout << "   ||\\\\\\\\\\\\\\\\\\    \\\\||||||//     \\\\\\|||||///      ||\\\\\\\\\\\\\\\\\\\\\n\n";
+
+        cout << "\n" << "You've gained " << score << " Points!" << "\n";
+        cout << "\n" << "Press any key to back to the main menu" << "\n";
         _getch();
         mainMenu();
     }
