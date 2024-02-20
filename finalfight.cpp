@@ -39,12 +39,13 @@ void generateGame(string);
 void generateMap(int, vector<Spaceship>, vector<Bullet>, int);
 void move(vector<Spaceship> &spaceships, int &score, int, int &goalScore, char, vector<Bullet> &bullets);
 void shot(vector<Bullet> &bullets, Spaceship);
+void gameLog(vector<Spaceship> spaceships);
 void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int &goalScore, int);
 void refreshPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int &goalScore, int);
 void createEnemy(vector<Spaceship> &spaceships, int);
 void increaseScore(int &score, string);
 void damage(Spaceship &spaceship);
-void gameOver(bool, int &goalScore, int score);
+void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships);
 
 int main()
 {
@@ -679,11 +680,11 @@ void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int 
     }
     if (spaceships[0].health == 0)
     {
-        gameOver(false, goalScore, score);
+        gameOver(false, goalScore, score, spaceships);
     }
     if (score >= goalScore && goalScore != -1)
     {
-        gameOver(true, goalScore, score);
+        gameOver(true, goalScore, score, spaceships);
     }
 }
 
@@ -781,15 +782,43 @@ void mkHistory(string status, int score, int goalScore, vector<Spaceship> &space
     
 }
 
-void gameOver(bool win, int &goalScore, int score)
+void gameLog(vector<Spaceship> spaceships){
+    int dartCount = 0, strikerCount = 0, wraithCount = 0, bansheeCount = 0;
+    for(int i = 0; i < spaceships.size(); i++)
+    {
+        if(spaceships[i].health == 0)
+        {
+            if (spaceships[i].type == "Dart")
+                dartCount++;
+            else if (spaceships[i].type == "Striker")
+                strikerCount++;
+            else if (spaceships[i].type == "Wraith")
+                wraithCount++;
+            else if (spaceships[i].type == "Banshee")
+                bansheeCount++;
+        }
+    }
+
+    cout << "You've destroyed:" << endl;
+    cout << dartCount << " Dart" << endl;
+    cout << strikerCount << " Striker" << endl;
+    cout << wraithCount << " Wraith" << endl;
+    cout << bansheeCount << " Banshee" << endl;
+}
+
+void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships)
 {
     clearScreen();
     if (win)
     {
-        cout << "\n   \\\\      //\\\\      //  ||    ||\\\\      || \n";
-        cout << "    \\\\    //  \\\\    //   ||    ||  \\\\    || \n";
-        cout << "     \\\\  //    \\\\  //    ||    ||    \\\\  || \n";
-        cout << "      \\\\//      \\\\//     ||    ||      \\\\|| \n\n";
+        cout << "\n"
+             << "   \\\\      //\\\\      //  ||    ||\\\\      || \n"
+             << "    \\\\    //  \\\\    //   ||    ||  \\\\    || \n"
+             << "     \\\\  //    \\\\  //    ||    ||    \\\\  || \n"
+             << "      \\\\//      \\\\//     ||    ||      \\\\|| \n\n";
+
+        cout << "\n" << "Game Log: " << "\n";
+        gameLog(spaceships);
         
         cout << "\n" << "Press c for entering the infinite mode or b for going back to the menu";
         char ch = _getch();
@@ -806,14 +835,17 @@ void gameOver(bool win, int &goalScore, int score)
     }
     else
     {   
-        cout << "\n   ||             //||||||\\\\       ///|||||\\\\\\    ||\\\\\\\\\\\\\\\\\\\\\n";
-        cout << "   ||            ||        ||      \\\\       //    ||\n";
-        cout << "   ||            ||        ||         \\\\          ||\\\\\\\\\\\\\\\\\\\\\n";
-        cout << "   ||            ||        ||    //       \\\\      ||\n";
-        cout << "   ||\\\\\\\\\\\\\\\\\\    \\\\||||||//     \\\\\\|||||///      ||\\\\\\\\\\\\\\\\\\\\\n\n";
+        cout << "\n"  
+             << "   ||             //||||||\\\\       ///|||||\\\\\\    ||\\\\\\\\\\\\\\\\\\\\\n"
+             << "   ||            ||        ||      \\\\       //    ||\n"
+             << "   ||            ||        ||         \\\\          ||\\\\\\\\\\\\\\\\\\\\\n"
+             << "   ||            ||        ||    //       \\\\      ||\n"
+             << "   ||\\\\\\\\\\\\\\\\\\    \\\\||||||//     \\\\\\|||||///      ||\\\\\\\\\\\\\\\\\\\\\n\n";
 
         cout << "\n" << "You've gained " << score << " Points!" << "\n";
         cout << "\n" << "Press any key to back to the main menu" << "\n";
+        cout << "\n" << "Game Log: " << "\n";
+        gameLog(spaceships);
         _getch();
         mainMenu();
     }
@@ -831,11 +863,6 @@ void hideCursor()
 // this function is used when we want to clear the terminal screen
 void clearScreen()
 {
-#ifdef _WIN32
-    // for windows
-    system("CLS");
-#else
-    // for other operating systems
-    system("clear");
-#endif
+    system("CLS || CLEAR");
+    // cls for windows and clear for other opratuing systems
 }
