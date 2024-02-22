@@ -34,22 +34,23 @@ void runGame();
 void clearScreen();
 void hideCursor();
 void mainMenu();
-void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore);
-void deleteSavedInfo();
+void readSavedGames(string, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore, int &level);
+void autoSave(vector<Spaceship>, vector<Bullet>, int, int, int, int);
+void deleteSavedInfo(string);
 void statusBar(int, int, int, int);
-void pauseMenu();
+void pauseMenu(string);
 string selectMode();
 void generateGame(string);
 void generateMap(int, vector<Spaceship>, vector<Bullet>, int, int);
 void move(vector<Spaceship> &spaceships, int &score, int, int &goalScore, char, vector<Bullet> &bullets, int &level);
 void shot(vector<Bullet> &bullets, Spaceship);
-void gameLog(vector<Spaceship> spaceships);
+void gameLog(vector<Spaceship>);
 void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int &goalScore, int, int &level);
 void refreshPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int &goalScore, int, bool, int &level);
 void createEnemy(vector<Spaceship> &spaceships, int);
 void increaseScore(int &score, string, int &level);
 void damage(Spaceship &spaceship);
-void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships);
+void gameOver(bool, int &goalScore, int, vector<Spaceship>, string);
 
 int main()
 {
@@ -169,7 +170,20 @@ void mainMenu()
             exitOption = "Exit";
             if (ch == 13)
             {
-                generateGame("basic_load");
+                clearScreen();
+                string loadMode = selectMode();
+                if (loadMode == "back")
+                {
+                    mainMenu();
+                }
+                else if (loadMode == "basic")
+                {
+                    generateGame("basic_load");
+                }
+                else if (loadMode == "advanced")
+                {
+                    generateGame("advanced_load");
+                }
             }
             break;
         case 0:
@@ -312,7 +326,7 @@ void statusBar(int health, int score, int size, int level)
     }
 }
 
-void pauseMenu()
+void pauseMenu(string gameType)
 {
     char ch;
     string Resume = "Resume", Exit = "Exit";
@@ -390,7 +404,7 @@ void pauseMenu()
             if (ch == 13)
             {
                 clearScreen();
-                generateGame("basic_load");
+                generateGame(gameType + "_load");
                 return;
             }
             break;
@@ -407,7 +421,7 @@ void pauseMenu()
     } while (ch != 27);
 }
 
-void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore)
+void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore, int &level)
 {
     ifstream load;
     load.open(filename);
@@ -425,6 +439,11 @@ void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bulle
     else
     {
         load >> size >> goalScore >> currentScore;
+        if (filename == "advanced-savegames.txt")
+        {
+            load >> level;
+        }
+
         for (int i = 0; i < 2; i++)
         {
             load >> character.type >> character.startXPos >> character.endXPos >> character.startYPos >> character.endYPos >> character.health;
@@ -440,10 +459,17 @@ void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bulle
     }
 }
 
-void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, int currentScore, int goalScore)
+void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, int currentScore, int goalScore, int level)
 {
     ofstream output;
-    output.open("savegames.txt");
+    if (level != -1)
+    {
+        output.open("advanced-savegames.txt");
+    }
+    else
+    {
+        output.open("basic-savegames.txt");
+    }
 
     if (!output.is_open())
     {
@@ -451,7 +477,12 @@ void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, in
     }
     else
     {
-        output << size << " " << goalScore << " " << currentScore << endl;
+        output << size << " " << goalScore << " " << currentScore;
+        if (level != -1)
+        {
+            output << " " << level;
+        }
+        output << endl;
 
         output << spaceships[0].type << " " << spaceships[0].startXPos << " " << spaceships[0].endXPos << " " << spaceships[0].startYPos << " " << spaceships[0].endYPos << " " << spaceships[0].health << endl;
         output << spaceships[spaceships.size() - 1].type << " " << spaceships[spaceships.size() - 1].startXPos << " " << spaceships[spaceships.size() - 1].endXPos << " " << spaceships[spaceships.size() - 1].startYPos << " " << spaceships[spaceships.size() - 1].endYPos << " " << spaceships[spaceships.size() - 1].health << endl;
@@ -470,9 +501,16 @@ void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, in
     }
 }
 
-void deleteSavedInfo()
+void deleteSavedInfo(string gameMode)
 {
-    remove("savegames.txt");
+    if (gameMode == "basic")
+    {
+        remove("basic-savegames.txt");
+    }
+    else
+    {
+        remove("advanced-savegames.txt");
+    }
 }
 
 void generateGame(string gameType)
@@ -520,16 +558,25 @@ void generateGame(string gameType)
         spaceships.push_back(spaceship);
         createEnemy(spaceships, size);
         generateMap(size, spaceships, bullets, score, level);
-        autoSave(spaceships, bullets, size, score, goalScore);
+        autoSave(spaceships, bullets, size, score, goalScore, level);
     }
     else if (gameType == "basic_load")
     {
         clearScreen();
         spaceships.clear();
         bullets.clear();
-        readSavedGames("savegames.txt", spaceships, bullets, size, goalScore, score);
+        readSavedGames("basic-savegames.txt", spaceships, bullets, size, goalScore, score, level);
         generateMap(size, spaceships, bullets, score, level);
     }
+    else if (gameType == "advanced_load")
+    {
+        clearScreen();
+        spaceships.clear();
+        bullets.clear();
+        readSavedGames("advanced-savegames.txt", spaceships, bullets, size, goalScore, score, level);
+        generateMap(size, spaceships, bullets, score, level);
+    }
+
     if (gameType == "advanced")
     {
         score = 0, level = 0;
@@ -568,6 +615,9 @@ void generateGame(string gameType)
         spaceships.push_back(spaceship);
         createEnemy(spaceships, size);
         generateMap(size, spaceships, bullets, score, level);
+    }
+    if (gameType == "advanced" || gameType == "advanced_load")
+    {
         while (true)
         {
             this_thread::sleep_for(chrono::milliseconds(500));
@@ -592,10 +642,10 @@ void generateGame(string gameType)
                 }
                 else if (ch == 'p')
                 {
-                    pauseMenu();
+                    pauseMenu("advanced");
                     break;
                 }
-                autoSave(spaceships, bullets, size, score, goalScore);
+                autoSave(spaceships, bullets, size, score, goalScore, level);
             }
             else
             {
@@ -603,6 +653,7 @@ void generateGame(string gameType)
                 shot(bullets, spaceships[0]);
                 checkPositions(spaceships, bullets, score, goalScore, size, level);
                 generateMap(size, spaceships, bullets, score, level);
+                autoSave(spaceships, bullets, size, score, goalScore, level);
             }
         }
     }
@@ -631,10 +682,10 @@ void generateGame(string gameType)
                 }
                 else if (ch == 'p')
                 {
-                    pauseMenu();
+                    pauseMenu("basic");
                     break;
                 }
-                autoSave(spaceships, bullets, size, score, goalScore);
+                autoSave(spaceships, bullets, size, score, goalScore, level);
             }
         }
     }
@@ -768,13 +819,23 @@ void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int 
         damage(spaceships[0]);
         createEnemy(spaceships, size);
     }
+    string gameType;
+    if (level != -1)
+    {
+        gameType = "advanced";
+    }
+    else
+    {
+        gameType = "basic";
+    }
+
     if (spaceships[0].health == 0)
     {
-        gameOver(false, goalScore, score, spaceships);
+        gameOver(false, goalScore, score, spaceships, gameType);
     }
     if (score >= goalScore && goalScore != -1)
     {
-        gameOver(true, goalScore, score, spaceships);
+        gameOver(true, goalScore, score, spaceships, gameType);
     }
 }
 
@@ -903,7 +964,7 @@ void gameLog(vector<Spaceship> spaceships)
     cout << bansheeCount << " Banshee" << endl;
 }
 
-void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships)
+void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships, string gameMode)
 {
     clearScreen();
     if (win)
@@ -929,14 +990,14 @@ void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships)
             return;
             break;
         case 'b':
-            deleteSavedInfo();
+            deleteSavedInfo(gameMode);
             mainMenu();
             break;
         }
     }
     else
     {
-        deleteSavedInfo();
+        deleteSavedInfo(gameMode);
         cout << "\n"
              << "   ||             //||||||\\\\       ///|||||\\\\\\    ||\\\\\\\\\\\\\\\\\\\\\n"
              << "   ||            ||        ||      \\\\       //    ||\n"
