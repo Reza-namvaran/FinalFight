@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
+#include <cstdio>
 
 #define colorBlue "\033[0;34m"
 #define colorRed "\033[0;31m"
@@ -32,6 +33,7 @@ void clearScreen();
 void hideCursor();
 void mainMenu();
 void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore);
+void deleteSavedInfo();
 void statusBar(int, int, int);
 void pauseMenu();
 string selectMode();
@@ -159,7 +161,7 @@ void mainMenu()
             start = "Start Game";
             loadgame = colorYellow + loadgame + resetColor;
             exitOption = "Exit";
-            if(ch == 13)
+            if (ch == 13)
             {
                 generateGame("basic_load");
             }
@@ -390,67 +392,58 @@ void pauseMenu()
     } while (ch != 27);
 }
 
-void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore){
+void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore)
+{
     ifstream load;
     load.open(filename);
-    int gameCount;
     string line;
     Bullet bullet;
     Spaceship character;
 
-    if(!load.is_open())
+    if (!load.is_open())
     {
-        cerr << "Can't open the file" << endl;
+        cout << "There are no games, Please Start a new game" << endl;
+        cout << "Enter any key to go back" << endl;
+        _getch();
+        mainMenu();
     }
     else
     {
-        load >> gameCount;
-        if ( gameCount == 0 )
+        load >> size >> goalScore >> currentScore;
+        for (int i = 0; i < 2; i++)
         {
-            cout << "There are no games, Please Start a new game" << endl;
-            cout << "Enter any key to go back" << endl;
-            _getch();
-            mainMenu();
+            load >> character.type >> character.startXPos >> character.endXPos >> character.startYPos >> character.endYPos >> character.health;
+            spaceships.push_back(character);
         }
-        else
+        while (!load.eof())
         {
-            load >> size >> goalScore >> currentScore;
-            for(int i = 0; i < 2; i++)
-            {
-                load >> character.type >> character.startXPos >> character.endXPos >> character.startYPos >> character.endYPos >> character.health;
-                spaceships.push_back(character);
-            }
-            while(!load.eof())
-            {
-                load >> bullet.xPos >> bullet.yPos;
-                bullets.push_back(bullet);
-            }
+            load >> bullet.xPos >> bullet.yPos;
+            bullets.push_back(bullet);
         }
 
         load.close();
     }
 }
 
-void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, int currentScore, int goalScore){
+void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, int currentScore, int goalScore)
+{
     ofstream output;
     output.open("savegames.txt");
 
-    if(!output.is_open())
+    if (!output.is_open())
     {
         cerr << "Can't open file" << endl;
     }
     else
     {
-        output << 2 << endl;
-
         output << size << " " << goalScore << " " << currentScore << endl;
 
         output << spaceships[0].type << " " << spaceships[0].startXPos << " " << spaceships[0].endXPos << " " << spaceships[0].startYPos << " " << spaceships[0].endYPos << " " << spaceships[0].health << endl;
         output << spaceships[spaceships.size() - 1].type << " " << spaceships[spaceships.size() - 1].startXPos << " " << spaceships[spaceships.size() - 1].endXPos << " " << spaceships[spaceships.size() - 1].startYPos << " " << spaceships[spaceships.size() - 1].endYPos << " " << spaceships[spaceships.size() - 1].health << endl;
-        
-        for(int i = 0; i < bullets.size(); i++)
+
+        for (int i = 0; i < bullets.size(); i++)
         {
-            if(i == bullets.size() - 1)
+            if (i == bullets.size() - 1)
                 output << bullets[i].xPos << " " << bullets[i].yPos;
             else
             {
@@ -460,6 +453,11 @@ void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, in
 
         output.close();
     }
+}
+
+void deleteSavedInfo()
+{
+    remove("savegames.txt");
 }
 
 void generateGame(string gameType)
@@ -499,7 +497,6 @@ void generateGame(string gameType)
                 cout << "Notice: The minimum score is 20, try a greater score!" << endl;
             }
         } while (goalScore < 20);
-
 
         spaceship.type = "user";
         spaceship.startYPos = size - 1;
@@ -547,7 +544,6 @@ void generateGame(string gameType)
             autoSave(spaceships, bullets, size, score, goalScore);
         }
     }
-
 }
 
 void generateMap(int size, vector<Spaceship> spaceships, vector<Bullet> bullets, int score)
@@ -775,18 +771,18 @@ void damage(Spaceship &spaceship)
     }
 }
 
-void mkHistory(string status, int score, int goalScore, vector<Spaceship> &spaceships){
+void mkHistory(string status, int score, int goalScore, vector<Spaceship> &spaceships)
+{
     ofstream output;
     output.open("history.txt");
-
-    
 }
 
-void gameLog(vector<Spaceship> spaceships){
+void gameLog(vector<Spaceship> spaceships)
+{
     int dartCount = 0, strikerCount = 0, wraithCount = 0, bansheeCount = 0;
-    for(int i = 0; i < spaceships.size(); i++)
+    for (int i = 0; i < spaceships.size(); i++)
     {
-        if(spaceships[i].health == 0)
+        if (spaceships[i].health == 0)
         {
             if (spaceships[i].type == "Dart")
                 dartCount++;
@@ -817,10 +813,13 @@ void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships)
              << "     \\\\  //    \\\\  //    ||    ||    \\\\  || \n"
              << "      \\\\//      \\\\//     ||    ||      \\\\|| \n\n";
 
-        cout << "\n" << "Game Log: " << "\n";
+        cout << "\n"
+             << "Game Log: "
+             << "\n";
         gameLog(spaceships);
-        
-        cout << "\n" << "Press c for entering the infinite mode or b for going back to the menu";
+
+        cout << "\n"
+             << "Press c for entering the infinite mode or b for going back to the menu";
         char ch = _getch();
         switch (ch)
         {
@@ -829,23 +828,31 @@ void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships)
             return;
             break;
         case 'b':
+            deleteSavedInfo();
             mainMenu();
             break;
         }
     }
     else
-    {   
-        cout << "\n"  
+    {
+        deleteSavedInfo();
+        cout << "\n"
              << "   ||             //||||||\\\\       ///|||||\\\\\\    ||\\\\\\\\\\\\\\\\\\\\\n"
              << "   ||            ||        ||      \\\\       //    ||\n"
              << "   ||            ||        ||         \\\\          ||\\\\\\\\\\\\\\\\\\\\\n"
              << "   ||            ||        ||    //       \\\\      ||\n"
              << "   ||\\\\\\\\\\\\\\\\\\    \\\\||||||//     \\\\\\|||||///      ||\\\\\\\\\\\\\\\\\\\\\n\n";
 
-        cout << "\n" << "You've gained " << score << " Points!" << "\n";
-        cout << "\n" << "Press any key to back to the main menu" << "\n";
-        cout << "\n" << "Game Log: " << "\n";
+        cout << "\n"
+             << "You've gained " << score << " Points!"
+             << "\n";
+        cout << "\n"
+             << "Game Log: "
+             << "\n";
         gameLog(spaceships);
+        cout << "\n"
+             << "Press any key to back to the main menu"
+             << "\n";
         _getch();
         mainMenu();
     }
@@ -864,5 +871,5 @@ void hideCursor()
 void clearScreen()
 {
     system("CLS || CLEAR");
-    // cls for windows and clear for other opratuing systems
+    // cls for windows and clear for other operating systems
 }
