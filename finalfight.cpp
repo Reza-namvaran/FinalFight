@@ -3,7 +3,6 @@
 #include <conio.h>
 #include <windows.h>
 #include <fstream>
-#include <sstream>
 #include <ctime>
 #include <cstdio>
 #include <chrono>
@@ -907,12 +906,18 @@ void mkHistory(string status, int score, int goalScore, int level, Spaceship spa
     {
         getline(input, data);
         datas.push_back(data);
-        counter++;
+        if (data != "")
+        {
+            counter++;
+        }
     }
     ofstream output("history.txt");
     for (int i = 0; i < datas.size(); i++)
     {
-        output << datas[i] << endl;
+        if (datas[i] != "")
+        {
+            output << datas[i] << endl;
+        }
     }
     counter++;
     input.close();
@@ -969,18 +974,22 @@ void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships,
 
         cout << "\n"
              << "Press c for entering the infinite mode or b for going back to the menu";
-        char ch = _getch();
-        switch (ch)
+        char ch;
+        do
         {
-        case 'c':
-            goalScore = -1;
-            return;
-            break;
-        case 'b':
-            deleteSavedInfo(gameMode);
-            mainMenu();
-            break;
-        }
+            ch = _getch();
+            switch (ch)
+            {
+            case 'c':
+                goalScore = -1;
+                return;
+                break;
+            case 'b':
+                deleteSavedInfo(gameMode);
+                mainMenu();
+                break;
+            }
+        } while (ch != 'c' && ch != 'b');
     }
     else
     {
