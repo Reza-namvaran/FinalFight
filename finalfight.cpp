@@ -37,6 +37,7 @@ void mainMenu();
 void readSavedGames(string, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore, int &level);
 void autoSave(vector<Spaceship>, vector<Bullet>, int, int, int, int);
 void deleteSavedInfo(string);
+void mkHistory(string, int, int, int, Spaceship);
 void statusBar(int, int, int, int);
 void pauseMenu(string);
 string selectMode();
@@ -50,7 +51,7 @@ void refreshPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, in
 void createEnemy(vector<Spaceship> &spaceships, int);
 void increaseScore(int &score, string, int &level);
 void damage(Spaceship &spaceship);
-void gameOver(bool, int &goalScore, int, vector<Spaceship>, string);
+void gameOver(bool, int &goalScore, int, vector<Spaceship>, int, string);
 
 int main()
 {
@@ -831,11 +832,11 @@ void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int 
 
     if (spaceships[0].health == 0)
     {
-        gameOver(false, goalScore, score, spaceships, gameType);
+        gameOver(false, goalScore, score, spaceships, level, gameType);
     }
     if (score >= goalScore && goalScore != -1)
     {
-        gameOver(true, goalScore, score, spaceships, gameType);
+        gameOver(true, goalScore, score, spaceships, level, gameType);
     }
 }
 
@@ -933,10 +934,36 @@ void damage(Spaceship &spaceship)
     }
 }
 
-void mkHistory(string status, int score, int goalScore, vector<Spaceship> &spaceships)
+void mkHistory(string status, int score, int goalScore, int level, Spaceship spaceship)
 {
-    ofstream output;
-    output.open("history.txt");
+    if (status == "Win")
+    {
+        score = goalScore;
+    }
+    vector<string> datas;
+    string data;
+    ifstream input("history.txt");
+    int counter = 0;
+    while (!input.eof() && input.is_open())
+    {
+        getline(input, data);
+        datas.push_back(data);
+        counter++;
+    }
+    ofstream output("history.txt");
+    for (int i = 0; i < datas.size(); i++)
+    {
+        output << datas[i] << endl;
+    }
+    counter++;
+    input.close();
+    output << "Game " + to_string(counter);
+    if (level != -1)
+    {
+        output << " - Level : " << level;
+    }
+    output << " - Point : " << score << " - Heal : " << spaceship.health << " - " << status;
+    output.close();
 }
 
 void gameLog(vector<Spaceship> spaceships)
@@ -964,11 +991,12 @@ void gameLog(vector<Spaceship> spaceships)
     cout << bansheeCount << " Banshee" << endl;
 }
 
-void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships, string gameMode)
+void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships, int level, string gameMode)
 {
     clearScreen();
     if (win)
     {
+        mkHistory("Win", score, goalScore, level, spaceships[0]);
         cout << "\n"
              << "   \\\\      //\\\\      //  ||    ||\\\\      || \n"
              << "    \\\\    //  \\\\    //   ||    ||  \\\\    || \n"
@@ -997,6 +1025,10 @@ void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships,
     }
     else
     {
+        if (goalScore != -1)
+        {
+            mkHistory("Lose", score, goalScore, level, spaceships[0]);
+        }
         deleteSavedInfo(gameMode);
         cout << "\n"
              << "   ||             //||||||\\\\       ///|||||\\\\\\    ||\\\\\\\\\\\\\\\\\\\\\n"
