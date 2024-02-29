@@ -521,9 +521,13 @@ void generateGame(string gameType)
     vector<Bullet> bullets;
     Spaceship spaceship;
 
-    if (gameType == "basic")
+    if (gameType == "basic" || gameType == "advanced")
     {
         score = 0;
+        if (gameType == "advanced")
+        {
+            level = 0;
+        }
         do
         {
             cout << "Please Enter the size of the map (minimum 15) : ";
@@ -561,62 +565,22 @@ void generateGame(string gameType)
         generateMap(size, spaceships, bullets, score, level);
         autoSave(spaceships, bullets, size, score, goalScore, level);
     }
-    else if (gameType == "basic_load")
+    else if (gameType == "basic_load" || gameType == "advanced_load")
     {
         clearScreen();
         spaceships.clear();
         bullets.clear();
-        readSavedGames("basic-savegames.txt", spaceships, bullets, size, goalScore, score, level);
-        generateMap(size, spaceships, bullets, score, level);
-    }
-    else if (gameType == "advanced_load")
-    {
-        clearScreen();
-        spaceships.clear();
-        bullets.clear();
-        readSavedGames("advanced-savegames.txt", spaceships, bullets, size, goalScore, score, level);
-        generateMap(size, spaceships, bullets, score, level);
-    }
-
-    if (gameType == "advanced")
-    {
-        score = 0, level = 0;
-        do
+        if (gameType == "advanced_load")
         {
-            cout << "Please Enter the size of the map (minimum 15) : ";
-            cin >> size;
-            if (size < 15)
-            {
-                cout << "Notice: The minimum size of map is 15, try a greater size!" << endl;
-            }
-        } while (size < 15);
-
-        if (size % 2 == 0)
-        {
-            cout << "Notice: You've entered an Even number for the size while it should be an odd number!" << endl;
-            cout << "The size has incremented by one automatically. Press any key to continue" << endl;
-            _getch();
-            size++;
+            readSavedGames("advanced-savegames.txt", spaceships, bullets, size, goalScore, score, level);
         }
-
-        do
+        else
         {
-            cout << "Please Enter your goal score (minimum 20) : ";
-            cin >> goalScore;
-            if (size < 20)
-            {
-                cout << "Notice: The minimum score is 20, try a greater score!" << endl;
-            }
-        } while (goalScore < 20);
-
-        spaceship.type = "user";
-        spaceship.startYPos = size - 1;
-        spaceship.startXPos = size / 2;
-        spaceship.health = 3;
-        spaceships.push_back(spaceship);
-        createEnemy(spaceships, size);
+            readSavedGames("basic-savegames.txt", spaceships, bullets, size, goalScore, score, level);
+        }
         generateMap(size, spaceships, bullets, score, level);
     }
+
     if (gameType == "advanced" || gameType == "advanced_load")
     {
         while (true)
@@ -862,42 +826,37 @@ void createEnemy(vector<Spaceship> &spaceships, int size)
     Spaceship enemy;
     srand(time(0));
     enemy.type = enemyTypes[rand() % 4];
+    int startXPos;
     if (enemy.type == enemyTypes[0])
     {
-        int startXPos = rand() % size;
-        enemy.startXPos = startXPos;
-        enemy.endXPos = enemy.startXPos;
+        startXPos = rand() % size;
+        enemy.endXPos = startXPos;
         enemy.startYPos = 0;
-        enemy.endYPos = 0;
         enemy.health = 1;
     }
     else if (enemy.type == enemyTypes[1])
     {
-        int startXPos = rand() % (size - 1);
-        enemy.startXPos = startXPos;
+        startXPos = rand() % (size - 1);
         enemy.endXPos = startXPos + 1;
         enemy.startYPos = -1;
-        enemy.endYPos = 0;
         enemy.health = 2;
     }
     else if (enemy.type == enemyTypes[2])
     {
-        int startXPos = rand() % (size - 2);
-        enemy.startXPos = startXPos;
+        startXPos = rand() % (size - 2);
         enemy.endXPos = startXPos + 2;
         enemy.startYPos = -2;
-        enemy.endYPos = 0;
         enemy.health = 4;
     }
     else
     {
-        int startXPos = rand() % (size - 3);
-        enemy.startXPos = startXPos;
+        startXPos = rand() % (size - 3);
         enemy.endXPos = startXPos + 3;
         enemy.startYPos = -3;
-        enemy.endYPos = 0;
         enemy.health = 6;
     }
+    enemy.startXPos = startXPos;
+    enemy.endYPos = 0;
     spaceships.push_back(enemy);
 }
 
