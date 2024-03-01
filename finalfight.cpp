@@ -779,7 +779,6 @@ void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int 
     }
     if (spaceships[spaceships.size() - 1].endYPos == size - 1)
     {
-        spaceships[spaceships.size() - 1].health = 0;
         damage(spaceships[0]);
         createEnemy(spaceships, size);
     }
@@ -961,12 +960,16 @@ void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships,
     if (win)
     {
         mkHistory("Win", score, goalScore, level, spaceships[0]);
-        cout << "\n"
+        
+        cout << colorGreen
+             << "\n"
              << "   \\\\      //\\\\      //  ||    ||\\\\      || \n"
              << "    \\\\    //  \\\\    //   ||    ||  \\\\    || \n"
              << "     \\\\  //    \\\\  //    ||    ||    \\\\  || \n"
-             << "      \\\\//      \\\\//     ||    ||      \\\\|| \n\n";
-
+             << "      \\\\//      \\\\//     ||    ||      \\\\|| \n"
+             << "\n"
+             << resetColor;
+    
         cout << "\n"
              << "Game Log: "
              << "\n";
@@ -998,12 +1001,15 @@ void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships,
             mkHistory("Lose", score, goalScore, level, spaceships[0]);
         }
         deleteSavedInfo(gameMode);
-        cout << "\n"
+        cout << colorRed
+             << "\n"
              << "   ||             //||||||\\\\       ///|||||\\\\\\    ||\\\\\\\\\\\\\\\\\\\\\n"
              << "   ||            ||        ||      \\\\       //    ||\n"
              << "   ||            ||        ||         \\\\          ||\\\\\\\\\\\\\\\\\\\\\n"
              << "   ||            ||        ||    //       \\\\      ||\n"
-             << "   ||\\\\\\\\\\\\\\\\\\    \\\\||||||//     \\\\\\|||||///      ||\\\\\\\\\\\\\\\\\\\\\n\n";
+             << "   ||\\\\\\\\\\\\\\\\\\    \\\\||||||//     \\\\\\|||||///      ||\\\\\\\\\\\\\\\\\\\\\n"
+             << "\n"
+             << resetColor;
 
         cout << "\n"
              << "You've gained " << score << " Points!"
