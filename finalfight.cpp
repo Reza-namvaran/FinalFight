@@ -1,12 +1,16 @@
 #include <iostream>
 #include <vector>
-#include <conio.h>
-#include <windows.h>
 #include <fstream>
 #include <ctime>
 #include <cstdio>
 #include <chrono>
 #include <thread>
+#ifdef _WIN32
+    #include <conio.h>
+    #include <windows.h>
+#else
+    #include <ncurses.h>
+#endif
 using namespace std;
 
 // declaring Colors
@@ -1054,6 +1058,10 @@ void hideCursor()
 // this function is used when we want to clear the terminal screen
 void clearScreen()
 {
-    system("clear || cls");
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
     // cls for windows and clear for other operating systems
 }
