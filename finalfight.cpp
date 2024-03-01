@@ -65,6 +65,7 @@ void runGame()
     mainMenu();
 }
 
+// this function controls main menu of game
 void mainMenu()
 {
     char ch;
@@ -200,6 +201,7 @@ void mainMenu()
     exit(0);
 }
 
+// this function controls select mode menu
 string selectMode()
 {
     char ch;
@@ -326,6 +328,7 @@ void statusBar(int health, int score, int size, int level)
     }
 }
 
+// this function shows a menu when game paused
 void pauseMenu(string gameType)
 {
     char ch;
@@ -459,6 +462,7 @@ void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bulle
     }
 }
 
+// this function saves all information of game in file until it finish
 void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, int currentScore, int goalScore, int level)
 {
     ofstream output;
@@ -501,6 +505,7 @@ void autoSave(vector<Spaceship> spaceships, vector<Bullet> bullets, int size, in
     }
 }
 
+// after finish each game the saved information (like spaceships positions , bullets position , ...) will delete
 void deleteSavedInfo(string gameMode)
 {
     if (gameMode == "basic")
@@ -655,6 +660,7 @@ void generateGame(string gameType)
     }
 }
 
+// this function creates map and shows spaceships and bullets in it
 void generateMap(int size, vector<Spaceship> spaceships, vector<Bullet> bullets, int score, int level)
 {
     clearScreen();
@@ -750,6 +756,7 @@ void move(vector<Spaceship> &spaceships, int &score, int size, int &goalScore, c
     checkPositions(spaceships, bullets, score, goalScore, size, level);
 }
 
+// this function creates a new bullet at the top of user spaceship position
 void shot(vector<Bullet> &bullets, Spaceship spaceship)
 {
     Bullet newBullet;
@@ -758,6 +765,7 @@ void shot(vector<Bullet> &bullets, Spaceship spaceship)
     bullets.push_back(newBullet);
 }
 
+// this function checks positions of all spaceships and bullets to damage spaceships and destroy bullets after hitting
 void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int &goalScore, int size, int &level)
 {
     for (int i = 0; i < bullets.size(); i++)
@@ -802,6 +810,7 @@ void checkPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int 
     }
 }
 
+// this functions moves up bullets and moves down enemy spaceships in the map of game
 void refreshPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &score, int &goalScore, int size, bool justShot, int &level)
 {
     if (!justShot)
@@ -818,6 +827,7 @@ void refreshPositions(vector<Spaceship> &spaceships, vector<Bullet> &bullets, in
     checkPositions(spaceships, bullets, score, goalScore, size, level);
 }
 
+// this function creates a new enemy spaceships with defferent types randomly
 void createEnemy(vector<Spaceship> &spaceships, int size)
 {
     string enemyTypes[4] = {"Dart", "Striker", "Wraith", "Banshee"};
@@ -858,6 +868,7 @@ void createEnemy(vector<Spaceship> &spaceships, int size)
     spaceships.push_back(enemy);
 }
 
+// when an enemy spaceship destroyed this function has to increase user score duo to enemy spaceship types (and in advanced mode this function calculates level to)
 void increaseScore(int &score, string type, int &level)
 {
     if (type == "Dart")
@@ -882,6 +893,7 @@ void increaseScore(int &score, string type, int &level)
     }
 }
 
+// this function decreases spaceship health after damage
 void damage(Spaceship &spaceship)
 {
     if (spaceship.health != 0)
@@ -891,6 +903,7 @@ void damage(Spaceship &spaceship)
     }
 }
 
+// after winning or losing a game this function will create history of that game with informations like score , level ,...
 void mkHistory(string status, int score, int goalScore, int level, Spaceship spaceship)
 {
     if (status == "Win")
@@ -954,6 +967,7 @@ void gameLog(vector<Spaceship> spaceships)
     cout << bansheeCount << " Banshee" << endl;
 }
 
+// this function shows the game result
 void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships, int level, string gameMode)
 {
     clearScreen();
