@@ -7,7 +7,9 @@
 #include <cstdio>
 #include <chrono>
 #include <thread>
+using namespace std;
 
+// declaring Colors
 #define colorBlue "\033[0;34m"
 #define colorRed "\033[0;31m"
 #define colorWhite "\u001b[37m"
@@ -16,8 +18,8 @@
 #define colorMagenta "\u001b[35m"
 #define resetColor "\033[0m"
 
-using namespace std;
 
+// structs
 struct Spaceship
 {
     string type;
@@ -29,7 +31,6 @@ struct Bullet
     int xPos, yPos;
 };
 
-void runGame();
 void clearScreen();
 void hideCursor();
 void mainMenu();
@@ -54,15 +55,10 @@ void gameOver(bool, int &goalScore, int, vector<Spaceship>, int, string);
 
 int main()
 {
-    runGame();
-    return 0;
-}
-
-void runGame()
-{
     clearScreen();
     hideCursor();
     mainMenu();
+    return 0;
 }
 
 // this function controls main menu of game
@@ -312,6 +308,7 @@ string selectMode()
     return "back";
 }
 
+// this function is used for displaying the status bar
 void statusBar(int health, int score, int size, int level)
 {
     if (level == -1)
@@ -424,6 +421,7 @@ void pauseMenu(string gameType)
     } while (ch != 27);
 }
 
+// this function reads the saved saved info
 void readSavedGames(string filename, vector<Spaceship> &spaceships, vector<Bullet> &bullets, int &size, int &goalScore, int &currentScore, int &level)
 {
     ifstream load;
@@ -518,6 +516,7 @@ void deleteSavedInfo(string gameMode)
     }
 }
 
+// this function is used to generate the game based on the user's selection
 void generateGame(string gameType)
 {
     int size, goalScore, score, level = -1;
@@ -730,6 +729,7 @@ void generateMap(int size, vector<Spaceship> spaceships, vector<Bullet> bullets,
     }
 }
 
+// this function moves player's spaceship
 void move(vector<Spaceship> &spaceships, int &score, int size, int &goalScore, char direction, vector<Bullet> &bullets, int &level)
 {
     checkPositions(spaceships, bullets, score, goalScore, size, level);
@@ -942,6 +942,7 @@ void mkHistory(string status, int score, int goalScore, int level, Spaceship spa
     output.close();
 }
 
+// this function creates a game log at the end
 void gameLog(vector<Spaceship> spaceships)
 {
     int dartCount = 0, strikerCount = 0, wraithCount = 0, bansheeCount = 0;
@@ -1040,6 +1041,7 @@ void gameOver(bool win, int &goalScore, int score, vector<Spaceship> spaceships,
     }
 }
 
+// this function hides mouse cursor to prevent glitching
 void hideCursor()
 {
     HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -1052,6 +1054,6 @@ void hideCursor()
 // this function is used when we want to clear the terminal screen
 void clearScreen()
 {
-    system("CLS || CLEAR");
+    system("clear || cls");
     // cls for windows and clear for other operating systems
 }
